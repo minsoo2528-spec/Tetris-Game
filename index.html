@@ -1,0 +1,24 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tetris</title>
+<style>body{margin:0;background:#111;color:#eee;font-family:sans-serif;text-align:center}canvas{background:#000;border:2px solid #555;margin-top:10px}</style>
+</head><body>
+<div>점수: <span id="s">0</span> · ←→ 이동 ↑ 회전 ↓ 내리기 Space 드롭</div>
+<canvas id="c" width="240" height="480"></canvas>
+<script>
+const W=10,H=20,S=24,x=c.getContext('2d');
+const P=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[0,1,1],[1,1,0]],[[1,1,0],[0,1,1]]];
+const C=['#0ff','#ff0','#a0f','#00f','#f80','#0f0','#f00'];
+let B=Array.from({length:H},()=>Array(W).fill(0)),p,sc=0;
+function nw(){const i=Math.random()*7|0;p={m:P[i],c:i+1,x:3,y:0};if(hit(0,0,p.m)){alert('게임 오버! 점수 '+sc);B=B.map(r=>r.fill(0));sc=0;}}
+function hit(dx,dy,m){return m.some((r,y)=>r.some((v,X)=>{if(!v)return 0;const a=p.x+X+dx,b=p.y+y+dy;return a<0||a>=W||b>=H||(b>=0&&B[b][a]);}))}
+function rot(m){return m[0].map((_,i)=>m.map(r=>r[i]).reverse())}
+function lock(){p.m.forEach((r,y)=>r.forEach((v,X)=>{if(v&&p.y+y>=0)B[p.y+y][p.x+X]=p.c}));
+B=B.filter(r=>r.some(v=>!v));const n=H-B.length;sc+=n*100;s.textContent=sc;while(B.length<H)B.unshift(Array(W).fill(0));nw();}
+function down(){if(!hit(0,1,p.m))p.y++;else lock();}
+function draw(){x.clearRect(0,0,240,480);const d=(a,b,k)=>{x.fillStyle=C[k-1];x.fillRect(a*S,b*S,S-1,S-1)};
+B.forEach((r,y)=>r.forEach((v,X)=>v&&d(X,y,v)));p.m.forEach((r,y)=>r.forEach((v,X)=>v&&d(p.x+X,p.y+y,p.c)));}
+document.onkeydown=e=>{const k=e.key;if(k=='ArrowLeft'&&!hit(-1,0,p.m))p.x--;else if(k=='ArrowRight'&&!hit(1,0,p.m))p.x++;
+else if(k=='ArrowDown')down();else if(k=='ArrowUp'){const r=rot(p.m);if(!hit(0,0,r))p.m=r;}else if(k==' '){while(!hit(0,1,p.m))p.y++;lock();}
+else return;e.preventDefault();draw();};
+nw();setInterval(()=>{down();draw()},500);
+</script></body></html>
